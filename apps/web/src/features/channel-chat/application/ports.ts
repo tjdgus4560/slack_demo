@@ -1,6 +1,5 @@
 import type {
   Channel,
-  ChannelId,
   Message,
   User,
   UserId,
@@ -11,11 +10,7 @@ export type ChannelChatSnapshot = {
   workspace: Workspace;
   channel: Channel;
   channels: Channel[];
-  currentUserId: UserId;
+  currentUserId?: UserId;
   participants: User[];
   messages: Message[];
-};
-
-export type ChannelChatRepository = {
-  getChannelChat(channelId: ChannelId): Promise<ChannelChatSnapshot>;
 };

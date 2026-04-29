@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Monorepo Slack Web
 
-## Getting Started
+Next.js app for the Slack-style channel chat UI. Data is backed by Convex Cloud
+only; there is no local database or mock runtime fallback.
 
-First, run the development server:
+## Environment
+
+Copy `.env.example` to `.env.local` and set:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://your-deployment.convex.site
+CLERK_JWT_ISSUER_DOMAIN=https://your-clerk-issuer.clerk.accounts.dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`NEXT_PUBLIC_CONVEX_URL` must point to a Convex Cloud deployment, not localhost
+or a self-hosted Convex URL.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Development
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+From the repository root:
 
-## Learn More
+```bash
+npm --workspace web run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:4200](http://localhost:4200).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Convex
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Push Convex functions and seed the Cloud deployment:
 
-## Deploy on Vercel
+```bash
+npm --workspace web run convex:dev
+npm --workspace web run convex:seed
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Use `convex:deploy` for deployment flows.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Verification
+
+```bash
+npm --workspace web run typecheck
+npm --workspace web run lint
+npm --workspace web run build
+```

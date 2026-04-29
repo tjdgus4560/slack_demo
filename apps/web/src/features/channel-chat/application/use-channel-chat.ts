@@ -1,94 +1,295 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { composeMessage } from "../domain";
+import { useUser } from "@clerk/nextjs";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
+import { useEffect, useMemo, useState } from "react";
+import { api } from "../../../../convex/_generated/api";
 import type { ChannelId } from "../domain";
 import type { ChannelChatSnapshot } from "./ports";
 
-function createClientMessageId() {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
+const DEFAULT_WORKSPACE_SLUG = "monorepo-labs";
+const WORKSPACE_LOAD_TIMEOUT_MS = 10000;
+
+function getErrorMessage(error: unknown) {
+  const message =
+    error instanceof Error ? error.message : "Something went wrong.";
+
+  if (
+    message.includes("You must be signed in to sync a user") ||
+    message.includes("Current user has not been synced yet") ||
+    message.includes("users:ensureCurrentUser")
+  ) {
+    return "Clerk is loaded, but Convex did not receive a valid Clerk JWT. Check that Clerk has a JWT template named \"convex\" and Convex has the matching CLERK_JWT_ISSUER_DOMAIN.";
   }
 
-  return `msg-${Date.now()}`;
+  return message;
 }
 
-export function useChannelChat(initialSnapshot: ChannelChatSnapshot) {
-  const [messages, setMessages] = useState(initialSnapshot.messages);
+export function useChannelChat() {
+  const { isLoaded, isSignedIn, user } = useUser();
+  const convexAuth = useConvexAuth();
+  const ensureCurrentUser = useMutation(api.users.ensureCurrentUser);
+  const sendMessageMutation = useMutation(api.channelChat.sendMessage);
+  const [activeChannelId, setActiveChannelId] = useState<ChannelId | null>(null);
   const [draft, setDraft] = useState("");
-  const [activeChannelId, setActiveChannelId] = useState<ChannelId>(
-    initialSnapshot.channel.id,
+  const [syncedUserKey, setSyncedUserKey] = useState<string | null>(null);
+  const [pendingUserKey, setPendingUserKey] = useState<string | null>(null);
+  const [failedUserKey, setFailedUserKey] = useState<string | null>(null);
+  const [retryNonce, setRetryNonce] = useState(0);
+  const [timedOutWorkspaceLoadKey, setTimedOutWorkspaceLoadKey] = useState<
+    string | null
+  >(null);
+  const [previousSnapshot, setPreviousSnapshot] =
+    useState<ChannelChatSnapshot | null>(null);
+  const [isSending, setIsSending] = useState(false);
+  const [syncErrorMessage, setSyncErrorMessage] = useState<string | null>(null);
+  const [sendErrorMessage, setSendErrorMessage] = useState<string | null>(null);
+
+  const clerkUserSyncKey =
+    isSignedIn && user
+      ? [
+          user.id,
+          user.fullName ?? "",
+          user.primaryEmailAddress?.emailAddress ?? "",
+          user.username ?? "",
+        ].join(":")
+      : null;
+
+  const isEnsuringCurrentUser =
+    clerkUserSyncKey !== null && pendingUserKey === clerkUserSyncKey;
+  const canQuerySnapshot =
+    isLoaded && isSignedIn && convexAuth.isAuthenticated;
+  const convexAuthErrorMessage =
+    isLoaded &&
+    isSignedIn &&
+    !convexAuth.isLoading &&
+    !convexAuth.isAuthenticated
+      ? 'Clerk is signed in, but Convex did not receive a valid Clerk JWT. Check that Clerk has a JWT template named "convex" and Convex has the matching CLERK_JWT_ISSUER_DOMAIN.'
+      : null;
+
+  useEffect(() => {
+    if (
+      !isLoaded ||
+      !isSignedIn ||
+      !user ||
+      convexAuth.isLoading ||
+      !convexAuth.isAuthenticated ||
+      !clerkUserSyncKey ||
+      syncedUserKey === clerkUserSyncKey ||
+      pendingUserKey === clerkUserSyncKey ||
+      failedUserKey === clerkUserSyncKey
+    ) {
+      return;
+    }
+
+    let isCancelled = false;
+    const currentUser = {
+      workspaceSlug: DEFAULT_WORKSPACE_SLUG,
+      ...(user.fullName ? { displayName: user.fullName } : {}),
+      ...(user.primaryEmailAddress?.emailAddress
+        ? { email: user.primaryEmailAddress.emailAddress }
+        : {}),
+      ...(user.username ? { username: user.username } : {}),
+    };
+
+    Promise.resolve()
+      .then(async () => {
+        if (isCancelled) {
+          return;
+        }
+
+        setPendingUserKey(clerkUserSyncKey);
+        setFailedUserKey(null);
+        setSyncErrorMessage(null);
+        await ensureCurrentUser(currentUser);
+
+        if (!isCancelled) {
+          setSyncedUserKey(clerkUserSyncKey);
+        }
+      })
+      .catch((error: unknown) => {
+        if (!isCancelled) {
+          setFailedUserKey(clerkUserSyncKey);
+          setSyncErrorMessage(getErrorMessage(error));
+        }
+      })
+      .finally(() => {
+        if (!isCancelled) {
+          setPendingUserKey((currentPendingUserKey) =>
+            currentPendingUserKey === clerkUserSyncKey ? null : currentPendingUserKey,
+          );
+        }
+      });
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [
+    ensureCurrentUser,
+    clerkUserSyncKey,
+    convexAuth.isAuthenticated,
+    convexAuth.isLoading,
+    failedUserKey,
+    isLoaded,
+    isSignedIn,
+    pendingUserKey,
+    syncedUserKey,
+    user,
+    user?.fullName,
+    user?.primaryEmailAddress?.emailAddress,
+    user?.username,
+  ]);
+
+  const snapshot = useQuery(
+    api.channelChat.getSnapshot,
+    canQuerySnapshot
+      ? {
+          workspaceSlug: DEFAULT_WORKSPACE_SLUG,
+          refreshKey: retryNonce,
+          ...(activeChannelId ? { channelId: activeChannelId } : {}),
+        }
+      : "skip",
   );
 
-  const activeChannel = useMemo(
-    () =>
-      initialSnapshot.channels.find((channel) => channel.id === activeChannelId) ??
-      initialSnapshot.channel,
-    [activeChannelId, initialSnapshot.channel, initialSnapshot.channels],
-  );
+  const normalizedSnapshot = snapshot as ChannelChatSnapshot | null | undefined;
 
-  const activeMessages = useMemo(
-    () =>
-      messages
-        .filter((message) => message.channelId === activeChannel.id)
-        .sort(
-          (left, right) =>
-            new Date(left.createdAt).getTime() -
-            new Date(right.createdAt).getTime(),
-        ),
-    [activeChannel.id, messages],
-  );
+  useEffect(() => {
+    if (!normalizedSnapshot) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setPreviousSnapshot(normalizedSnapshot);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [normalizedSnapshot]);
+
+  const visibleSnapshot =
+    normalizedSnapshot === undefined
+      ? previousSnapshot
+      : normalizedSnapshot;
+  const activeChannel = activeChannelId
+    ? (visibleSnapshot?.channels.find(
+        (channel) => channel.id === activeChannelId,
+      ) ?? visibleSnapshot?.channel)
+    : visibleSnapshot?.channel;
 
   const participantsById = useMemo(
     () =>
       new Map(
-        initialSnapshot.participants.map((participant) => [
+        (visibleSnapshot?.participants ?? []).map((participant) => [
           participant.id,
           participant,
         ]),
       ),
-    [initialSnapshot.participants],
+    [visibleSnapshot?.participants],
   );
 
-  const currentUser = participantsById.get(initialSnapshot.currentUserId);
+  const currentUser = visibleSnapshot?.currentUserId
+    ? participantsById.get(visibleSnapshot.currentUserId)
+    : undefined;
+
+  const isSnapshotLoading =
+    canQuerySnapshot && normalizedSnapshot === undefined;
+  const isWorkspaceLoading =
+    !isLoaded || convexAuth.isLoading || isSnapshotLoading;
+  const workspaceLoadKey = isWorkspaceLoading
+    ? [activeChannelId ?? "", clerkUserSyncKey ?? "", retryNonce].join(":")
+    : null;
+  const hasWorkspaceLoadTimedOut =
+    workspaceLoadKey !== null && timedOutWorkspaceLoadKey === workspaceLoadKey;
+  const loadingErrorMessage = hasWorkspaceLoadTimedOut
+    ? "Convex auth or workspace loading is taking longer than expected. Retry the connection, or sign out and sign in again."
+    : null;
+  const isInitialLoading =
+    !visibleSnapshot && isWorkspaceLoading && !hasWorkspaceLoadTimedOut;
+  const isRefreshing =
+    Boolean(visibleSnapshot) && isSnapshotLoading && !hasWorkspaceLoadTimedOut;
+  const canShowActiveMessages =
+    Boolean(activeChannel && visibleSnapshot?.channel.id === activeChannel.id);
+  const syncStatusMessage = isEnsuringCurrentUser
+    ? "Syncing your Clerk account with Convex."
+    : null;
+
+  useEffect(() => {
+    if (!workspaceLoadKey) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setTimedOutWorkspaceLoadKey(workspaceLoadKey);
+    }, WORKSPACE_LOAD_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [workspaceLoadKey]);
 
   function selectChannel(channelId: ChannelId) {
     setActiveChannelId(channelId);
     setDraft("");
   }
 
-  function sendMessage() {
-    if (!currentUser) {
+  async function sendMessage() {
+    const body = draft.trim();
+
+    if (!currentUser || !activeChannel || !body || isSending) {
       return;
     }
 
-    const message = composeMessage({
-      id: createClientMessageId(),
-      channelId: activeChannel.id,
-      authorId: currentUser.id,
-      body: draft,
-      createdAt: new Date().toISOString(),
-    });
+    setIsSending(true);
+    setSendErrorMessage(null);
 
-    if (!message) {
-      return;
+    try {
+      await sendMessageMutation({
+        channelId: activeChannel.id,
+        body,
+      });
+      setDraft("");
+    } catch (error) {
+      setSendErrorMessage(getErrorMessage(error));
+    } finally {
+      setIsSending(false);
     }
+  }
 
-    setMessages((currentMessages) => [...currentMessages, message]);
-    setDraft("");
+  function retryConnection() {
+    setSyncedUserKey(null);
+    setPendingUserKey(null);
+    setFailedUserKey(null);
+    setSyncErrorMessage(null);
+    setSendErrorMessage(null);
+    setTimedOutWorkspaceLoadKey(null);
+    setRetryNonce((currentRetryNonce) => currentRetryNonce + 1);
   }
 
   return {
-    activeChannelId,
+    activeChannelId: activeChannelId ?? activeChannel?.id ?? "",
+    canSendMessage: Boolean(currentUser),
     channel: activeChannel,
-    channels: initialSnapshot.channels,
+    channels: visibleSnapshot?.channels ?? [],
     currentUser,
     draft,
-    messages: activeMessages,
+    errorMessage:
+      sendErrorMessage ??
+      syncErrorMessage ??
+      convexAuthErrorMessage ??
+      loadingErrorMessage,
+    isInitialLoading,
+    isReady: Boolean(visibleSnapshot),
+    isRefreshing,
+    isSending,
+    isTimedOut: hasWorkspaceLoadTimedOut,
+    messages: canShowActiveMessages ? (visibleSnapshot?.messages ?? []) : [],
     participantsById,
+    retryConnection,
     selectChannel,
     setDraft,
     sendMessage,
-    workspace: initialSnapshot.workspace,
+    statusMessage: syncStatusMessage,
+    workspace: visibleSnapshot?.workspace,
   };
 }
