@@ -12,14 +12,16 @@ const WORKSPACE_LOAD_TIMEOUT_MS = 10000;
 
 function getErrorMessage(error: unknown) {
   const message =
-    error instanceof Error ? error.message : "Something went wrong.";
+    error instanceof Error ? error.message : "문제가 발생했습니다.";
 
   if (
     message.includes("You must be signed in to sync a user") ||
     message.includes("Current user has not been synced yet") ||
+    message.includes("사용자 동기화를 하려면 로그인해야 합니다") ||
+    message.includes("현재 사용자가 아직 동기화되지 않았습니다") ||
     message.includes("users:ensureCurrentUser")
   ) {
-    return "Clerk is loaded, but Convex did not receive a valid Clerk JWT. Check that Clerk has a JWT template named \"convex\" and Convex has the matching CLERK_JWT_ISSUER_DOMAIN.";
+    return "Clerk는 로드됐지만 Convex가 유효한 Clerk JWT를 받지 못했습니다. Clerk에 \"convex\" JWT 템플릿이 있고 Convex의 CLERK_JWT_ISSUER_DOMAIN이 일치하는지 확인해 주세요.";
   }
 
   return message;
@@ -64,7 +66,7 @@ export function useChannelChat() {
     isSignedIn &&
     !convexAuth.isLoading &&
     !convexAuth.isAuthenticated
-      ? 'Clerk is signed in, but Convex did not receive a valid Clerk JWT. Check that Clerk has a JWT template named "convex" and Convex has the matching CLERK_JWT_ISSUER_DOMAIN.'
+      ? 'Clerk 로그인은 완료됐지만 Convex가 유효한 Clerk JWT를 받지 못했습니다. Clerk에 "convex" JWT 템플릿이 있고 Convex의 CLERK_JWT_ISSUER_DOMAIN이 일치하는지 확인해 주세요.'
       : null;
 
   useEffect(() => {
@@ -202,7 +204,7 @@ export function useChannelChat() {
   const hasWorkspaceLoadTimedOut =
     workspaceLoadKey !== null && timedOutWorkspaceLoadKey === workspaceLoadKey;
   const loadingErrorMessage = hasWorkspaceLoadTimedOut
-    ? "Convex auth or workspace loading is taking longer than expected. Retry the connection, or sign out and sign in again."
+    ? "Convex 인증 또는 워크스페이스 로딩이 예상보다 오래 걸리고 있습니다. 연결을 다시 시도하거나 로그아웃 후 다시 로그인해 주세요."
     : null;
   const isInitialLoading =
     !visibleSnapshot && isWorkspaceLoading && !hasWorkspaceLoadTimedOut;
@@ -211,7 +213,7 @@ export function useChannelChat() {
   const canShowActiveMessages =
     Boolean(activeChannel && visibleSnapshot?.channel.id === activeChannel.id);
   const syncStatusMessage = isEnsuringCurrentUser
-    ? "Syncing your Clerk account with Convex."
+    ? "Clerk 계정을 Convex와 동기화하는 중입니다."
     : null;
 
   useEffect(() => {

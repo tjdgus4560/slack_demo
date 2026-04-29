@@ -142,13 +142,13 @@ export const sendMessage = mutation({
     const body = args.body.trim();
 
     if (!body) {
-      throw new ConvexError("Message body cannot be empty.");
+      throw new ConvexError("메시지 내용을 입력해 주세요.");
     }
 
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
-      throw new ConvexError("You must be signed in to send messages.");
+      throw new ConvexError("메시지를 보내려면 로그인해야 합니다.");
     }
 
     const currentUser = await ctx.db
@@ -157,19 +157,19 @@ export const sendMessage = mutation({
       .first();
 
     if (!currentUser) {
-      throw new ConvexError("Current user has not been synced yet.");
+      throw new ConvexError("현재 사용자가 아직 동기화되지 않았습니다.");
     }
 
     const channelId = ctx.db.normalizeId("channels", args.channelId);
 
     if (!channelId) {
-      throw new ConvexError("Unknown channel.");
+      throw new ConvexError("알 수 없는 채널입니다.");
     }
 
     const channel = await ctx.db.get(channelId);
 
     if (!channel) {
-      throw new ConvexError("Unknown channel.");
+      throw new ConvexError("알 수 없는 채널입니다.");
     }
 
     const membership = await ctx.db
@@ -180,7 +180,7 @@ export const sendMessage = mutation({
       .first();
 
     if (!membership) {
-      throw new ConvexError("You are not a member of this channel.");
+      throw new ConvexError("이 채널의 멤버가 아닙니다.");
     }
 
     await ctx.db.insert("messages", {

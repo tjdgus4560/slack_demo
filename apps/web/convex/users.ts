@@ -2,7 +2,7 @@ import { ConvexError, v } from "convex/values";
 import { mutation } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 
-const DEFAULT_ROLE = "Workspace Owner";
+const DEFAULT_ROLE = "워크스페이스 소유자";
 const DEFAULT_WORKSPACE_SLUG = "monorepo-labs";
 
 function getEmailHandle(email?: string | null) {
@@ -22,7 +22,7 @@ function getDisplayName({
     displayName?.trim() ||
     username?.trim() ||
     getEmailHandle(email) ||
-    "You"
+    "나"
   );
 }
 
@@ -35,7 +35,7 @@ function getHandle({
   email?: string;
   username?: string;
 }) {
-  return (
+  const handle = (
     username?.trim() ||
     getEmailHandle(email) ||
     getDisplayName({ displayName, email, username })
@@ -43,13 +43,15 @@ function getHandle({
     .toLowerCase()
     .replace(/[^a-z0-9._-]+/g, "-")
     .replace(/^-+|-+$/g, "");
+
+  return handle || "user";
 }
 
 function getInitials(displayName: string) {
   const nameParts = displayName.split(/\s+/).filter(Boolean);
 
   if (nameParts.length === 0) {
-    return "YO";
+    return "나";
   }
 
   if (nameParts.length === 1) {
@@ -70,7 +72,7 @@ export const ensureCurrentUser = mutation({
     const identity = await ctx.auth.getUserIdentity();
 
     if (!identity) {
-      throw new ConvexError("You must be signed in to sync a user.");
+      throw new ConvexError("사용자 동기화를 하려면 로그인해야 합니다.");
     }
 
     const workspaceSlug = args.workspaceSlug ?? DEFAULT_WORKSPACE_SLUG;
@@ -80,7 +82,7 @@ export const ensureCurrentUser = mutation({
       .first();
 
     if (!workspace) {
-      throw new ConvexError("Seed the default workspace before signing in.");
+      throw new ConvexError("로그인 전에 기본 워크스페이스를 seed해 주세요.");
     }
 
     const displayName = getDisplayName(args);
@@ -92,7 +94,7 @@ export const ensureCurrentUser = mutation({
       initials: getInitials(displayName),
       role: DEFAULT_ROLE,
       status: "online" as const,
-      statusLabel: "Building",
+      statusLabel: "작업 중",
       accentColor: "#e11d48",
       dmUnreadCount: 0,
       updatedAt: now,

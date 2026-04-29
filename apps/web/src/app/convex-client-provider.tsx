@@ -14,10 +14,11 @@ export function ConvexClientProvider({ children }: { children: ReactNode }) {
       <main className="flex min-h-dvh items-center justify-center bg-[var(--linear-bg)] px-6 text-zinc-100">
         <section className="w-full max-w-sm rounded-md border border-white/10 bg-[var(--linear-panel)] p-5 text-center">
           <h1 className="text-sm font-semibold text-zinc-100">
-            Missing Convex configuration
+            Convex 설정이 필요합니다
           </h1>
           <p className="mt-2 text-sm leading-6 text-zinc-500">
-            Set NEXT_PUBLIC_CONVEX_URL, then restart the Next.js dev server.
+            NEXT_PUBLIC_CONVEX_URL을 설정한 뒤 Next.js 개발 서버를 다시
+            시작해 주세요.
           </p>
         </section>
       </main>

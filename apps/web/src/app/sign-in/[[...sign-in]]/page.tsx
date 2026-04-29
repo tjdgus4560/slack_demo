@@ -1,4 +1,9 @@
 import { SignIn } from "@clerk/nextjs";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "로그인 | Monorepo Slack",
+};
 
 export default function SignInPage() {
   return (

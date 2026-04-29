@@ -1,23 +1,14 @@
 import type { Metadata } from "next";
+import { koKR } from "@clerk/localizations";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Geist, Geist_Mono } from "next/font/google";
+import { ClerkKoreanDomPatch } from "./clerk-korean-dom-patch";
 import { ConvexClientProvider } from "./convex-client-provider";
 import "./globals.css";
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Monorepo Slack",
   description:
-    "A Linear-inspired Slack clone backed by Clerk and Convex Cloud.",
+    "Clerk와 Convex Cloud로 동작하는 Monorepo Slack 협업 워크스페이스입니다.",
 };
 
 export default function RootLayout({
@@ -26,19 +17,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="ko"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="ko" className="h-full antialiased">
       <body className="min-h-full overflow-hidden bg-background text-foreground">
         <ClerkProvider
           afterSignOutUrl="/"
           appearance={{
             cssLayerName: "clerk",
           }}
+          localization={koKR}
           signInUrl="/sign-in"
           signUpUrl="/sign-up"
         >
+          <ClerkKoreanDomPatch />
           <ConvexClientProvider>{children}</ConvexClientProvider>
         </ClerkProvider>
       </body>

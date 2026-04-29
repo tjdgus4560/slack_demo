@@ -10,6 +10,11 @@
   --linear-panel-strong: #141722;
   --linear-line: #262a36;
   --linear-muted: #8b90a0;
+  --font-geist-sans:
+    "Inter", "Segoe UI", "Malgun Gothic", "Apple SD Gothic Neo", Arial,
+    sans-serif;
+  --font-geist-mono:
+    "SFMono-Regular", Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
 @theme inline {

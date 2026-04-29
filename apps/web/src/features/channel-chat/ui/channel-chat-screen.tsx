@@ -39,14 +39,14 @@ import type { Channel, Message, User } from "../domain";
 import type { ChannelChatSnapshot } from "../application";
 
 function formatTime(isoDate: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ko-KR", {
     hour: "numeric",
     minute: "2-digit",
   }).format(new Date(isoDate));
 }
 
 function formatDateLabel(isoDate: string) {
-  return new Intl.DateTimeFormat("en-US", {
+  return new Intl.DateTimeFormat("ko-KR", {
     day: "numeric",
     month: "short",
     weekday: "short",
@@ -86,13 +86,13 @@ function AuthControls() {
           className="hidden h-8 items-center rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50 sm:inline-flex"
           href="/sign-in"
         >
-          Log in
+          로그인
         </Link>
         <Link
           className="inline-flex h-8 items-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white"
           href="/sign-up"
         >
-          Sign up
+          회원가입
         </Link>
       </Show>
     </div>
@@ -181,7 +181,7 @@ function AccountMenu({ currentUser }: { currentUser?: User }) {
             type="button"
           >
             <UserCircle className="h-4 w-4 text-zinc-500" />
-            <span className="min-w-0 flex-1 truncate">Manage account</span>
+            <span className="min-w-0 flex-1 truncate">계정 관리</span>
           </button>
           <button
             className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
@@ -189,7 +189,7 @@ function AccountMenu({ currentUser }: { currentUser?: User }) {
             type="button"
           >
             <LogOut className="h-4 w-4 text-zinc-500" />
-            <span className="min-w-0 flex-1 truncate">Sign out</span>
+            <span className="min-w-0 flex-1 truncate">로그아웃</span>
           </button>
         </div>
       ) : null}
@@ -204,10 +204,10 @@ function AccountMenu({ currentUser }: { currentUser?: User }) {
         <Avatar user={currentUser} />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-sm font-medium text-zinc-100">
-            {currentUser?.displayName ?? "Unknown"}
+            {currentUser?.displayName ?? "알 수 없음"}
           </span>
           <span className="block truncate text-xs text-zinc-500">
-            {currentUser?.statusLabel ?? "Offline"}
+            {currentUser?.statusLabel ?? "오프라인"}
           </span>
         </span>
         <MoreHorizontal className="h-4 w-4 shrink-0 text-zinc-500" />
@@ -279,32 +279,32 @@ function WorkspaceRail({ initials }: { initials: string }) {
   return (
     <aside className="hidden w-[72px] shrink-0 border-r border-white/10 bg-[#07080d] px-3 py-3 md:flex md:flex-col">
       <button
-        aria-label="Open workspace"
+        aria-label="워크스페이스 열기"
         className="flex h-11 w-11 items-center justify-center rounded-md bg-gradient-to-br from-violet-500 via-fuchsia-500 to-cyan-400 text-sm font-bold text-white shadow-[0_12px_34px_rgba(124,58,237,0.32)]"
-        title="Open workspace"
+        title="워크스페이스 열기"
         type="button"
       >
         {initials}
       </button>
       <div className="mt-5 flex flex-1 flex-col items-center gap-2">
-        <IconButton label="Threads">
+        <IconButton label="스레드">
           <MessageSquareText className="h-4 w-4" />
         </IconButton>
-        <IconButton label="Inbox">
+        <IconButton label="받은 항목">
           <Inbox className="h-4 w-4" />
         </IconButton>
-        <IconButton label="Activity">
+        <IconButton label="활동">
           <Bell className="h-4 w-4" />
         </IconButton>
-        <IconButton label="Search">
+        <IconButton label="검색">
           <Search className="h-4 w-4" />
         </IconButton>
       </div>
       <div className="flex flex-col items-center gap-2">
-        <IconButton label="Create">
+        <IconButton label="새로 만들기">
           <Plus className="h-4 w-4" />
         </IconButton>
-        <IconButton label="Settings">
+        <IconButton label="설정">
           <Settings className="h-4 w-4" />
         </IconButton>
       </div>
@@ -353,24 +353,24 @@ function WorkspaceSidebar({
             type="button"
           >
             <Clock3 className="h-4 w-4 text-zinc-500" />
-            Later
+            나중에
           </button>
           <button
             className="flex h-9 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 text-sm text-zinc-300 transition hover:bg-white/[0.07]"
             type="button"
           >
             <AtSign className="h-4 w-4 text-zinc-500" />
-            Mentions
+            멘션
           </button>
         </div>
 
         <SidebarSection
           action={
-            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="Add channel">
+            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="채널 추가">
               <Plus className="h-3.5 w-3.5" />
             </IconButton>
           }
-          title="Channels"
+          title="채널"
         >
           {channels.map((channel) => (
             <ChannelButton
@@ -386,11 +386,11 @@ function WorkspaceSidebar({
 
         <SidebarSection
           action={
-            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="New direct message">
+            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="새 다이렉트 메시지">
               <SquarePen className="h-3.5 w-3.5" />
             </IconButton>
           }
-          title="Direct messages"
+          title="다이렉트 메시지"
         >
           {directMessages.map((user) => (
             <button
@@ -432,7 +432,7 @@ function MessageList({
         <div>
           <RefreshCw className="mx-auto h-6 w-6 animate-spin text-zinc-600" />
           <p className="mt-3 text-sm font-medium text-zinc-300">
-            Loading messages...
+            메시지를 불러오는 중입니다...
           </p>
         </div>
       </div>
@@ -445,10 +445,10 @@ function MessageList({
         <div>
           <MessageSquareText className="mx-auto h-7 w-7 text-zinc-600" />
           <p className="mt-3 text-sm font-medium text-zinc-300">
-            No messages yet.
+            아직 메시지가 없습니다.
           </p>
           <p className="mt-1 text-sm text-zinc-500">
-            Start the room with a short update.
+            짧은 업데이트로 대화를 시작해 보세요.
           </p>
         </div>
       </div>
@@ -461,7 +461,7 @@ function MessageList({
         <div className="sticky top-0 z-10 mb-3 flex justify-center">
           <div className="inline-flex h-8 items-center gap-2 rounded-md border border-white/10 bg-[var(--linear-panel-strong)] px-3 text-xs font-medium text-zinc-400 shadow-[0_12px_28px_rgba(0,0,0,0.26)]">
             <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-            Loading messages...
+            메시지를 불러오는 중입니다...
           </div>
         </div>
       ) : null}
@@ -493,14 +493,14 @@ function MessageList({
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
                     <h3 className="text-sm font-semibold text-zinc-100">
-                      {author?.displayName ?? "Unknown"}
+                      {author?.displayName ?? "알 수 없음"}
                     </h3>
                     <span className="text-xs text-zinc-500">{author?.role}</span>
                     <time className="text-xs text-zinc-600" dateTime={message.createdAt}>
                       {formatTime(message.createdAt)}
                     </time>
                     {message.isEdited ? (
-                      <span className="text-xs text-zinc-600">edited</span>
+                      <span className="text-xs text-zinc-600">수정됨</span>
                     ) : null}
                   </div>
                   <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-6 text-zinc-300">
@@ -526,7 +526,7 @@ function MessageList({
                           className="rounded-md border border-white/10 bg-white/[0.03] px-2 py-1 text-xs font-medium text-cyan-200 transition hover:bg-white/[0.06]"
                           type="button"
                         >
-                          {message.replyCount} replies
+                          답글 {message.replyCount}개
                         </button>
                       ) : null}
                     </div>
@@ -557,8 +557,8 @@ function ChannelContextPanel({
   return (
     <aside className="hidden w-[336px] shrink-0 border-l border-white/10 bg-[var(--linear-panel)] xl:flex xl:flex-col">
       <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
-        <p className="text-sm font-semibold text-zinc-100">Details</p>
-        <IconButton label="Toggle details">
+        <p className="text-sm font-semibold text-zinc-100">세부 정보</p>
+        <IconButton label="세부 정보 접기">
           <PanelRight className="h-4 w-4" />
         </IconButton>
       </div>
@@ -573,7 +573,7 @@ function ChannelContextPanel({
                 ) : (
                   <Hash className="h-3.5 w-3.5" />
                 )}
-                Channel
+                채널
               </div>
               <h2 className="mt-2 truncate text-lg font-semibold text-zinc-50">
                 {channel.name}
@@ -588,13 +588,13 @@ function ChannelContextPanel({
           </p>
           <div className="mt-4 grid grid-cols-2 gap-2">
             <div className="rounded-md border border-white/10 bg-black/20 p-3">
-              <p className="text-xs text-zinc-500">Members</p>
+              <p className="text-xs text-zinc-500">멤버</p>
               <p className="mt-1 text-xl font-semibold text-zinc-100">
                 {channel.memberCount}
               </p>
             </div>
             <div className="rounded-md border border-white/10 bg-black/20 p-3">
-              <p className="text-xs text-zinc-500">Unread</p>
+              <p className="text-xs text-zinc-500">읽지 않음</p>
               <p className="mt-1 text-xl font-semibold text-zinc-100">
                 {channel.unreadCount}
               </p>
@@ -605,10 +605,10 @@ function ChannelContextPanel({
         <section className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-4">
           <div className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
             <Zap className="h-4 w-4 text-cyan-300" />
-            Launch readiness
+            출시 준비
           </div>
           <div className="mt-4 space-y-3">
-            {["Beta cohort", "Onboarding copy", "QA signoff"].map(
+            {["베타 그룹", "온보딩 문구", "QA 승인"].map(
               (item) => (
                 <div className="flex items-center gap-3" key={item}>
                   <CheckCircle2 className="h-4 w-4 text-emerald-300" />
@@ -623,10 +623,10 @@ function ChannelContextPanel({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
               <Users className="h-4 w-4 text-violet-300" />
-              People
+              사람들
             </div>
             <span className="text-xs text-zinc-500">
-              {onlineMembers.length} online
+              온라인 {onlineMembers.length}명
             </span>
           </div>
           <div className="mt-4 space-y-3">
@@ -648,13 +648,13 @@ function ChannelContextPanel({
 
         <section className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-4">
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-            Workspace
+            워크스페이스
           </p>
           <p className="mt-2 text-sm leading-6 text-zinc-300">
             {workspace.tagline}
           </p>
           <div className="mt-4 flex items-center justify-between rounded-md border border-white/10 bg-black/20 px-3 py-2">
-            <span className="text-sm text-zinc-400">Active members</span>
+            <span className="text-sm text-zinc-400">활성 멤버</span>
             <span className="text-sm font-semibold text-zinc-100">
               {workspace.activeMembers}
             </span>
@@ -709,24 +709,24 @@ function Composer({
           id="message"
           onChange={(event) => onDraftChange(event.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Message #${channelName}`}
+          placeholder={`#${channelName}에 메시지 보내기`}
           rows={2}
           value={draft}
         />
         <div className="flex items-center justify-between border-t border-white/10 px-2 py-2">
           <div className="flex items-center gap-1">
-            <IconButton label="Add reaction">
+            <IconButton label="반응 추가">
               <Smile className="h-4 w-4" />
             </IconButton>
-            <IconButton label="Shortcuts">
+            <IconButton label="바로가기">
               <Zap className="h-4 w-4" />
             </IconButton>
           </div>
           <button
-            aria-label="Send message"
+            aria-label="메시지 보내기"
             className="inline-flex h-8 items-center justify-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white disabled:cursor-not-allowed disabled:bg-zinc-800 disabled:text-zinc-500"
             disabled={!trimmedDraft || isSending || !canSendMessage}
-            title="Send message"
+            title="메시지 보내기"
             type="submit"
           >
             <Send className="h-4 w-4" />
@@ -755,10 +755,10 @@ function SignedOutComposer({ channelName }: { channelName: string }) {
           <div className="min-w-0">
             <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-100">
               <Lock className="h-4 w-4 shrink-0 text-zinc-500" />
-              <span className="truncate">Sign in to join #{channelName}</span>
+              <span className="truncate">#{channelName}에 참여하려면 로그인하세요</span>
             </div>
             <p className="mt-1 text-sm text-zinc-500">
-              You are viewing a public preview.
+              공개 미리보기로 보고 있습니다.
             </p>
           </div>
           <div className="flex shrink-0 items-center gap-2">
@@ -766,13 +766,13 @@ function SignedOutComposer({ channelName }: { channelName: string }) {
               className="inline-flex h-8 items-center rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
               href="/sign-in"
             >
-              Log in
+              로그인
             </Link>
             <Link
               className="inline-flex h-8 items-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white"
               href="/sign-up"
             >
-              Sign up
+              회원가입
             </Link>
           </div>
         </div>
@@ -835,18 +835,18 @@ function ChannelChatUnauthenticated() {
             className="inline-flex h-8 items-center rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
             href="/sign-in"
           >
-            Log in
+            로그인
           </Link>
           <Link
             className="inline-flex h-8 items-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white"
             href="/sign-up"
           >
-            Sign up
+            회원가입
           </Link>
         </>
       }
-      message="You are signed out. Sign in to sync your Clerk account and open the Convex workspace."
-      title="Authentication required"
+      message="Clerk 계정을 동기화하고 Convex 워크스페이스를 열려면 로그인해 주세요."
+      title="로그인이 필요합니다"
     />
   );
 }
@@ -903,24 +903,24 @@ function ChannelChatBootShell({
           --
         </div>
         <div className="mt-5 flex flex-1 flex-col items-center gap-2">
-          <IconButton label="Threads">
+          <IconButton label="스레드">
             <MessageSquareText className="h-4 w-4" />
           </IconButton>
-          <IconButton label="Inbox">
+          <IconButton label="받은 항목">
             <Inbox className="h-4 w-4" />
           </IconButton>
-          <IconButton label="Activity">
+          <IconButton label="활동">
             <Bell className="h-4 w-4" />
           </IconButton>
-          <IconButton label="Search">
+          <IconButton label="검색">
             <Search className="h-4 w-4" />
           </IconButton>
         </div>
         <div className="flex flex-col items-center gap-2">
-          <IconButton label="Create">
+          <IconButton label="새로 만들기">
             <Plus className="h-4 w-4" />
           </IconButton>
-          <IconButton label="Settings">
+          <IconButton label="설정">
             <Settings className="h-4 w-4" />
           </IconButton>
         </div>
@@ -944,22 +944,22 @@ function ChannelChatBootShell({
               type="button"
             >
               <Clock3 className="h-4 w-4 text-zinc-500" />
-              Later
+              나중에
             </button>
             <button
               className="flex h-9 items-center gap-2 rounded-md border border-white/10 bg-white/[0.04] px-2 text-sm text-zinc-300"
               type="button"
             >
               <AtSign className="h-4 w-4 text-zinc-500" />
-              Mentions
+              멘션
             </button>
           </div>
 
           <div className="mb-2 flex h-7 items-center justify-between px-2">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
-              Channels
+              채널
             </p>
-            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="Add channel">
+            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="채널 추가">
               <Plus className="h-3.5 w-3.5" />
             </IconButton>
           </div>
@@ -976,9 +976,9 @@ function ChannelChatBootShell({
 
           <div className="mb-2 flex h-7 items-center justify-between px-2">
             <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-zinc-500">
-              Direct messages
+              다이렉트 메시지
             </p>
-            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="New direct message">
+            <IconButton className="h-6 w-6 border-transparent bg-transparent" label="새 다이렉트 메시지">
               <SquarePen className="h-3.5 w-3.5" />
             </IconButton>
           </div>
@@ -1016,12 +1016,12 @@ function ChannelChatBootShell({
               type="button"
             >
               <Search className="h-4 w-4" />
-              <span className="truncate">Search workspace</span>
+              <span className="truncate">워크스페이스 검색</span>
             </button>
-            <IconButton label="Open canvas">
+            <IconButton label="캔버스 열기">
               <PanelRight className="h-4 w-4" />
             </IconButton>
-            <IconButton label="More actions">
+            <IconButton label="더보기">
               <MoreHorizontal className="h-4 w-4" />
             </IconButton>
           </div>
@@ -1073,23 +1073,23 @@ function ChannelChatBootShell({
               <div className="mx-auto max-w-5xl rounded-md border border-white/10 bg-[#0b0d12]">
                 <div className="px-4 py-3">
                   <div className="min-h-16 text-sm leading-6 text-zinc-600">
-                    Message channel
+                    채널에 메시지 보내기
                   </div>
                 </div>
                 <div className="flex items-center justify-between border-t border-white/10 px-2 py-2">
                   <div className="flex gap-1">
-                    <IconButton label="Add reaction">
+                    <IconButton label="반응 추가">
                       <Smile className="h-4 w-4" />
                     </IconButton>
-                    <IconButton label="Shortcuts">
+                    <IconButton label="바로가기">
                       <Zap className="h-4 w-4" />
                     </IconButton>
                   </div>
                   <button
-                    aria-label="Send message"
+                    aria-label="메시지 보내기"
                     className="inline-flex h-8 items-center justify-center rounded-md bg-zinc-800 px-3 text-sm font-semibold text-zinc-500"
                     disabled
-                    title="Send message"
+                    title="메시지 보내기"
                     type="button"
                   >
                     <Send className="h-4 w-4" />
@@ -1101,8 +1101,8 @@ function ChannelChatBootShell({
 
           <aside className="hidden w-[336px] shrink-0 border-l border-white/10 bg-[var(--linear-panel)] xl:flex xl:flex-col">
             <div className="flex h-14 items-center justify-between border-b border-white/10 px-4">
-              <p className="text-sm font-semibold text-zinc-100">Details</p>
-              <IconButton label="Toggle details">
+              <p className="text-sm font-semibold text-zinc-100">세부 정보</p>
+              <IconButton label="세부 정보 접기">
                 <PanelRight className="h-4 w-4" />
               </IconButton>
             </div>
@@ -1110,18 +1110,18 @@ function ChannelChatBootShell({
               <section className="rounded-md border border-white/10 bg-white/[0.035] p-4">
                 <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
                   <Hash className="h-3.5 w-3.5" />
-                  Channel
+                  채널
                 </div>
                 <SkeletonBlock className="mt-3 h-5 w-36" />
                 <SkeletonBlock className="mt-3 h-3 w-full" />
                 <SkeletonBlock className="mt-2 h-3 w-3/4" />
                 <div className="mt-4 grid grid-cols-2 gap-2">
                   <div className="rounded-md border border-white/10 bg-black/20 p-3">
-                    <p className="text-xs text-zinc-500">Members</p>
+                    <p className="text-xs text-zinc-500">멤버</p>
                     <SkeletonBlock className="mt-2 h-6 w-10" />
                   </div>
                   <div className="rounded-md border border-white/10 bg-black/20 p-3">
-                    <p className="text-xs text-zinc-500">Unread</p>
+                    <p className="text-xs text-zinc-500">읽지 않음</p>
                     <SkeletonBlock className="mt-2 h-6 w-10" />
                   </div>
                 </div>
@@ -1130,10 +1130,10 @@ function ChannelChatBootShell({
               <section className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
                   <Zap className="h-4 w-4 text-cyan-300" />
-                  Launch readiness
+                  출시 준비
                 </div>
                 <div className="mt-4 space-y-3">
-                  {["Beta cohort", "Onboarding copy", "QA signoff"].map((item) => (
+                  {["베타 그룹", "온보딩 문구", "QA 승인"].map((item) => (
                     <div className="flex items-center gap-3" key={item}>
                       <CheckCircle2 className="h-4 w-4 text-emerald-300" />
                       <span className="text-sm text-zinc-300">{item}</span>
@@ -1145,7 +1145,7 @@ function ChannelChatBootShell({
               <section className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-4">
                 <div className="flex items-center gap-2 text-sm font-semibold text-zinc-100">
                   <Users className="h-4 w-4 text-violet-300" />
-                  People
+                  사람들
                 </div>
                 <div className="mt-4 space-y-3">
                   {Array.from({ length: 3 }).map((_, index) => (
@@ -1162,12 +1162,12 @@ function ChannelChatBootShell({
 
               <section className="mt-4 rounded-md border border-white/10 bg-white/[0.035] p-4">
                 <p className="text-xs font-medium uppercase tracking-[0.14em] text-zinc-500">
-                  Workspace
+                  워크스페이스
                 </p>
                 <SkeletonBlock className="mt-3 h-3 w-full" />
                 <SkeletonBlock className="mt-2 h-3 w-3/4" />
                 <div className="mt-4 flex items-center justify-between rounded-md border border-white/10 bg-black/20 px-3 py-2">
-                  <span className="text-sm text-zinc-400">Active members</span>
+                  <span className="text-sm text-zinc-400">활성 멤버</span>
                   <SkeletonBlock className="h-4 w-10" />
                 </div>
               </section>
@@ -1228,20 +1228,20 @@ function ChannelChatContent() {
     <>
       <StatusButton onClick={retryConnection} variant="primary">
         <RefreshCw className="h-4 w-4" />
-        Retry
+        다시 시도
       </StatusButton>
       <StatusButton onClick={() => void signOut({ redirectUrl: "/sign-in" })}>
         <LogOut className="h-4 w-4" />
-        Sign out
+        로그아웃
       </StatusButton>
     </>
   );
 
   const shellStatusMessage = isTimedOut
     ? (errorMessage ??
-      "Convex workspace loading is taking longer than expected.")
+      "Convex 워크스페이스 로딩이 예상보다 오래 걸리고 있습니다.")
     : isRefreshing
-      ? "Loading latest workspace data..."
+      ? "최신 워크스페이스 데이터를 불러오는 중입니다..."
       : null;
 
   if (isInitialLoading) {
@@ -1254,7 +1254,7 @@ function ChannelChatContent() {
         actions={recoveryActions}
         message={
           errorMessage ??
-          "Seed the Convex workspace, then refresh this page to continue."
+          "Convex 워크스페이스를 seed한 뒤 페이지를 새로고침해 주세요."
         }
         tone="warning"
       />
@@ -1300,12 +1300,12 @@ function ChannelChatContent() {
               type="button"
             >
               <Search className="h-4 w-4" />
-              <span className="truncate">Search {workspace.name}</span>
+              <span className="truncate">{workspace.name} 검색</span>
             </button>
-            <IconButton label="Open canvas">
+            <IconButton label="캔버스 열기">
               <PanelRight className="h-4 w-4" />
             </IconButton>
-            <IconButton label="More actions">
+            <IconButton label="더보기">
               <MoreHorizontal className="h-4 w-4" />
             </IconButton>
             <AuthControls />
