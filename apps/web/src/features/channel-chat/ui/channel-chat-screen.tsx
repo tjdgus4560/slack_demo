@@ -1,5 +1,6 @@
 "use client";
 
+import { Show, SignInButton, SignUpButton, useClerk } from "@clerk/nextjs";
 import {
   AtSign,
   Bell,
@@ -9,6 +10,7 @@ import {
   Hash,
   Inbox,
   Lock,
+  LogOut,
   MessageSquareText,
   MoreHorizontal,
   PanelRight,
@@ -19,10 +21,11 @@ import {
   Smile,
   SquarePen,
   Star,
+  UserCircle,
   Users,
   Zap,
 } from "lucide-react";
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { FormEvent, KeyboardEvent, ReactNode } from "react";
 import { useChannelChat } from "../application";
 import type { Channel, Message, User } from "../domain";
@@ -72,6 +75,31 @@ function IconButton({
   );
 }
 
+function AuthControls() {
+  return (
+    <div className="flex shrink-0 items-center gap-2">
+      <Show when="signed-out">
+        <SignInButton>
+          <button
+            className="hidden h-8 items-center rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50 sm:inline-flex"
+            type="button"
+          >
+            Log in
+          </button>
+        </SignInButton>
+        <SignUpButton>
+          <button
+            className="inline-flex h-8 items-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+            type="button"
+          >
+            Sign up
+          </button>
+        </SignUpButton>
+      </Show>
+    </div>
+  );
+}
+
 function PresenceDot({ status }: { status: User["status"] }) {
   const statusClassName = {
     away: "bg-amber-400",
@@ -99,6 +127,92 @@ function Avatar({ user }: { user?: User }) {
           <PresenceDot status={user.status} />
         </span>
       ) : null}
+    </div>
+  );
+}
+
+function AccountMenu({ currentUser }: { currentUser?: User }) {
+  const { openUserProfile, signOut } = useClerk();
+  const [isOpen, setIsOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      return;
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    }
+
+    function handleKeyDown(event: globalThis.KeyboardEvent) {
+      if (event.key === "Escape") {
+        setIsOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isOpen]);
+
+  function handleManageAccount() {
+    setIsOpen(false);
+    openUserProfile();
+  }
+
+  async function handleSignOut() {
+    setIsOpen(false);
+    await signOut({ redirectUrl: "/" });
+  }
+
+  return (
+    <div className="relative" ref={menuRef}>
+      {isOpen ? (
+        <div className="absolute bottom-full left-0 right-0 z-20 mb-2 overflow-hidden rounded-md border border-white/10 bg-[var(--linear-panel-strong)] p-1 shadow-[0_18px_42px_rgba(0,0,0,0.42)]">
+          <button
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
+            onClick={handleManageAccount}
+            type="button"
+          >
+            <UserCircle className="h-4 w-4 text-zinc-500" />
+            <span className="min-w-0 flex-1 truncate">Manage account</span>
+          </button>
+          <button
+            className="flex h-9 w-full items-center gap-2 rounded-md px-2 text-left text-sm text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
+            onClick={() => void handleSignOut()}
+            type="button"
+          >
+            <LogOut className="h-4 w-4 text-zinc-500" />
+            <span className="min-w-0 flex-1 truncate">Sign out</span>
+          </button>
+        </div>
+      ) : null}
+
+      <button
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+        className="flex w-full items-center gap-3 rounded-md bg-white/[0.04] p-2 text-left transition hover:bg-white/[0.07] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-zinc-500"
+        onClick={() => setIsOpen((currentIsOpen) => !currentIsOpen)}
+        type="button"
+      >
+        <Avatar user={currentUser} />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-sm font-medium text-zinc-100">
+            {currentUser?.displayName ?? "Unknown"}
+          </span>
+          <span className="block truncate text-xs text-zinc-500">
+            {currentUser?.statusLabel ?? "Offline"}
+          </span>
+        </span>
+        <MoreHorizontal className="h-4 w-4 shrink-0 text-zinc-500" />
+      </button>
     </div>
   );
 }
@@ -298,18 +412,7 @@ function WorkspaceSidebar({
       </div>
 
       <div className="border-t border-white/10 p-3">
-        <div className="flex items-center gap-3 rounded-md bg-white/[0.04] p-2">
-          <Avatar user={currentUser} />
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-zinc-100">
-              {currentUser?.displayName ?? "Unknown"}
-            </p>
-            <p className="truncate text-xs text-zinc-500">
-              {currentUser?.statusLabel ?? "Offline"}
-            </p>
-          </div>
-          <MoreHorizontal className="h-4 w-4 text-zinc-500" />
-        </div>
+        <AccountMenu currentUser={currentUser} />
       </div>
     </aside>
   );
@@ -602,6 +705,44 @@ function Composer({
   );
 }
 
+function SignedOutComposer({ channelName }: { channelName: string }) {
+  return (
+    <div className="shrink-0 border-t border-white/10 bg-[var(--linear-surface)] px-4 py-3 sm:px-6">
+      <div className="mx-auto max-w-5xl rounded-md border border-white/10 bg-[#0b0d12] p-4 shadow-[0_16px_52px_rgba(0,0,0,0.35)]">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <div className="flex min-w-0 items-center gap-2 text-sm font-semibold text-zinc-100">
+              <Lock className="h-4 w-4 shrink-0 text-zinc-500" />
+              <span className="truncate">Sign in to join #{channelName}</span>
+            </div>
+            <p className="mt-1 text-sm text-zinc-500">
+              You are viewing a public preview.
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <SignInButton>
+              <button
+                className="inline-flex h-8 items-center rounded-md border border-white/10 bg-white/[0.04] px-3 text-sm font-medium text-zinc-300 transition hover:bg-white/[0.07] hover:text-zinc-50"
+                type="button"
+              >
+                Log in
+              </button>
+            </SignInButton>
+            <SignUpButton>
+              <button
+                className="inline-flex h-8 items-center rounded-md bg-zinc-100 px-3 text-sm font-semibold text-zinc-950 transition hover:bg-white"
+                type="button"
+              >
+                Sign up
+              </button>
+            </SignUpButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ChannelChatScreen({ initialSnapshot }: ChannelChatScreenProps) {
   const {
     activeChannelId,
@@ -680,6 +821,7 @@ export function ChannelChatScreen({ initialSnapshot }: ChannelChatScreenProps) {
             <IconButton label="More actions">
               <MoreHorizontal className="h-4 w-4" />
             </IconButton>
+            <AuthControls />
           </div>
         </header>
 
@@ -717,12 +859,17 @@ export function ChannelChatScreen({ initialSnapshot }: ChannelChatScreenProps) {
               </div>
             </div>
 
-            <Composer
-              channelName={channel.name}
-              draft={draft}
-              onDraftChange={setDraft}
-              onSubmit={sendMessage}
-            />
+            <Show when="signed-in">
+              <Composer
+                channelName={channel.name}
+                draft={draft}
+                onDraftChange={setDraft}
+                onSubmit={sendMessage}
+              />
+            </Show>
+            <Show when="signed-out">
+              <SignedOutComposer channelName={channel.name} />
+            </Show>
           </div>
 
           <ChannelContextPanel
