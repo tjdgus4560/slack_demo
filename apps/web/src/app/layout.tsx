@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Monorepo Slack",
   description:
-    "A Linear-inspired Slack clone built with vertical slices and mock data.",
+    "A Linear-inspired Slack clone backed by Clerk and Convex Cloud.",
 };
 
 export default function RootLayout({

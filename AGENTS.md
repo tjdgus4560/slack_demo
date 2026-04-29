@@ -8,6 +8,9 @@
 - Authentication is handled by Clerk.
 - The database is Convex Cloud production only.
 
+## Deployment URL
+- Production web app: https://slack.ubot.site/
+
 ## Deployment Flow
 - When asked to deploy, first verify the web app builds successfully.
 - After a successful build, push the Git branch. Vercel deploys automatically through the configured webhook.

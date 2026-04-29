@@ -23,7 +23,7 @@ or a self-hosted Convex URL.
 From the repository root:
 
 ```bash
-npm --workspace web run dev
+pnpm --filter web dev
 ```
 
 Open [http://localhost:4200](http://localhost:4200).
@@ -33,8 +33,8 @@ Open [http://localhost:4200](http://localhost:4200).
 Push Convex functions and seed the Cloud deployment:
 
 ```bash
-npm --workspace web run convex:dev
-npm --workspace web run convex:seed
+pnpm --filter web convex:dev
+pnpm --filter web convex:seed
 ```
 
 Use `convex:deploy` for deployment flows.
@@ -42,7 +42,7 @@ Use `convex:deploy` for deployment flows.
 ## Verification
 
 ```bash
-npm --workspace web run typecheck
-npm --workspace web run lint
-npm --workspace web run build
+pnpm --filter web typecheck
+pnpm --filter web lint
+pnpm --filter web build
 ```

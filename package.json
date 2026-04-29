@@ -2,11 +2,7 @@
   "name": "monorepo-slack",
   "version": "0.1.0",
   "private": true,
-  "packageManager": "npm@11.13.0",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "packageManager": "pnpm@10.33.2",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
